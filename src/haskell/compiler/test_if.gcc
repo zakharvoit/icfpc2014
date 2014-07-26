@@ -1,9 +1,9 @@
 LDC 5
 LDC 5
-CEQ // if 5 == 5
+CEQ ; if 5 == 5
 TSEL 4 7
-LDC 100 ; true // then return 100
+LDC 100 ; then return 100
 LDC 1
 TSEL 8 255
-LDC 200 ; false // else return 200
+LDC 200 ; else return 200
 RTN

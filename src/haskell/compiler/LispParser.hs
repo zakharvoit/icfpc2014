@@ -48,4 +48,6 @@ parser :: Lexer Char [Lexem]
 parser = many $ lexem $ exprParser
 
 lexer :: [Char] -> [Lexem]
-lexer = runParse parser
+lexer s = runParse parser s'
+  where
+    s' = unlines $ filter (/= "") $ map (takeWhile (/= ';')) $ lines s
