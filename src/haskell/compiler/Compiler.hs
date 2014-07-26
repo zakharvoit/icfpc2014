@@ -80,7 +80,7 @@ processIfs' (x:xs) idx = x : processIfs' xs (idx + 1)
 calcSize :: [Opcode] -> Word8
 calcSize [] = 0
 calcSize (Call _ _ : xs) = 2 + calcSize xs
-calcSize (If _ _ : xs) = 2 + calcSize xs
+calcSize (If _ _ : xs) = 1 + calcSize xs
 calcSize (Jmp _ : xs) = 2 + calcSize xs
 calcSize (_:xs) = 1 + calcSize xs
 
