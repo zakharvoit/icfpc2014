@@ -11,3 +11,12 @@
     (+ (length (cdr list)) 1)
     )
   )
+
+(defun pair-eq-p (a b)
+  (&& (= (car a) (car b)) (= (cdr a) (cdr b)))
+  )
+
+;; Bitwise not
+(defun ! (a)
+  (= a 0)
+  )

@@ -4,27 +4,28 @@
 
 (defun step (state world)
   (cons 0 (choose-direction
-           (!! world 0) ; map
+           world
            (!! (!! (!! world 1) 1) 0) ; x
            (!! (!! (!! world 1) 1) 1) ; y
            )
         )
   )
 
-(defun dx () (cons 0 (cons 1 (cons 0 -1))))
-(defun dy () (cons -1 (cons 0 (cons 1 0))))
+(defun dx () (cons 0 (cons 1 (cons 0 (cons -1 0)))))
+(defun dy () (cons -1 (cons 0 (cons 1 (cons 0 0)))))
 
 ;; Choose first direction which we can go
-(defun choose-direction (map x y)
-  (choose-direction- 0 map x y)
+(defun choose-direction (world x y)
+  (choose-direction- 0 (!! world 0) (!! world 2) x y)
   )
 
 ;; Loop in choose-direction
-(defun choose-direction- (i map x y)
+(defun choose-direction- (i map ghosts x y)
   (if (= i 3) 3 ; exit
-    (if (ok-pos-p map (+ x (!! (dx) i)) (+ y (!! (dy) i)))
+    (if (&& (ok-pos-p map (+ x (!! (dx) i)) (+ y (!! (dy) i)))
+            (no-ghost-p ghosts (cons (+ x (!! (dx) i)) (+ y (!! (dy) i)))))
         i
-      (choose-direction- (+ i 1) map x y)
+      (choose-direction- (+ i 1) map ghosts x y)
       )
     )
   )
@@ -42,5 +43,26 @@
   )
 
 (defun free-pos-p (pos)
-  (&& (<= 1 pos) (<= pos 4))
+  (> pos 0)
+  )
+
+(defun no-ghost-p (ghosts pos)
+  (if (atom ghosts) 1
+    (&&
+     (! (pair-eq-p pos (!! (car ghosts) 1)))
+     (no-ghost-near-p (cdr ghosts) pos)
+     )
+    )
+  )
+
+(defun no-ghost-near-p (ghosts pos)
+  (no-ghost-near-p- ghosts pos (cons 0 (dx)) (cons 0 (dy)))
+  )
+
+(defun no-ghost-near-p- (ghosts pos dx dy)
+  (if (atom dx) 1
+    (&& (no-ghost-p ghosts (cons (+ (car pos) (car dx)) (+ (cdr pos) (car dy))))
+        (no-ghost-near-p- ghosts pos (cdr dx) (cdr dy))
+        )
+    )
   )
