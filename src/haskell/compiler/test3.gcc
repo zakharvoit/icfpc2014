@@ -1,0 +1,12 @@
+LD 0 0
+LD 0 0
+LDF 6
+AP 1
+ADD
+RTN
+LD 0 0
+LD 0 0
+LDF 1
+AP 1
+MUL
+RTN

@@ -1,0 +1,4 @@
+LDC 10
+LDC 100
+ADD
+RTN

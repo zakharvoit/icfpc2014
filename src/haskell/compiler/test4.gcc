@@ -1,0 +1,6 @@
+LD 0 0
+LD 0 1
+LD 0 2
+MUL
+ADD
+RTN

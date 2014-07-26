@@ -1,0 +1,8 @@
+LD 0 0
+LD 0 1
+ADD
+RTN
+LD 0 0
+LD 0 1
+SUB
+RTN
