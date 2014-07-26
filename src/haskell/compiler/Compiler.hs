@@ -37,9 +37,9 @@ allFunctionsToAddresses x = let addr = map fname x in
                               , addr)
 
 address :: Func -> [Func] -> Int
-address (Func name _ _) f = (fromIntegral $ sum $ map (length . fops) $
-                           take (fromJust $ name `elemIndex` (map fname f)) f)
-                            + 1
+address (Func name _ _) f = fromIntegral $ sum $ map (calcSize . fops)
+                            $ take (fromJust $ name `elemIndex` (map fname f))
+                            f
 
 allCallsToAddresses :: [AFunc] -> [String] -> [Int] -> [AFunc]
 allCallsToAddresses f a addr = map (\(AFunc i a' o) ->

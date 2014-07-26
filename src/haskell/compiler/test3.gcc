@@ -6,7 +6,7 @@ ADD
 RTN
 LD 0 0
 LD 0 0
-LDF 1
+LDF 0
 AP 1
 MUL
 RTN
