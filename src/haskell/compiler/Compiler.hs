@@ -26,12 +26,6 @@ data AFuncBin = AFuncBin { afbname :: Word8
                          , afbops :: [Opcode]
                          }
 
-instance Show AFuncBin where
-  show x = show (head (afbops x))
-           ++ " ; function on address " ++ show (afbname x) ++ "\n"
-           ++ (((concatMap $ (++ "\n") . show) . afbops)
-           $ x { afbops = tail $ afbops x })
-
 lexemToExpr :: Lexem -> Expr
 lexemToExpr (LName s) = Name s
 lexemToExpr (LList s) = List $ map lexemToExpr s
@@ -59,7 +53,7 @@ correctFunc f = f { fops = fops f ++ [RTN] }
 
 callToAddress :: Opcode -> [String] -> [Word8] -> [Opcode]
 callToAddress (Call x y) a addr
-  = [ LDF $ (addr !!) $ fromJust $ x `elemIndex` a
+  = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a)
     , AP y]
 callToAddress x _ _ = [x]
 
@@ -69,6 +63,26 @@ replaceArgs (AFunc f args ops) = AFuncBin f $ map (\op -> repla op args) ops
 repla :: Opcode -> [String] -> Opcode
 repla (Var x) args = LD 0 $ fromIntegral $ fromJust $ x `elemIndex` args
 repla x _ = x
+
+processIfs :: [Opcode] -> [Opcode]
+processIfs x = processIfs' x 1
+
+processIfs' :: [Opcode] -> Int -> [Opcode]
+processIfs' [] _ = []
+processIfs' (If a b : xs) idx =
+  TSEL (fromIntegral idx)
+  (fromIntegral idx + a + 2)
+  : processIfs' xs (idx + 1)
+processIfs' (Jmp a : xs) idx =
+  LDC 1 : TSEL (fromIntegral idx + a + 1) 255 : processIfs' xs (idx + 2)
+processIfs' (x:xs) idx = x : processIfs' xs (idx + 1)
+
+calcSize :: [Opcode] -> Word8
+calcSize [] = 0
+calcSize (Call _ _ : xs) = 2 + calcSize xs
+calcSize (If _ _ : xs) = 2 + calcSize xs
+calcSize (Jmp _ : xs) = 2 + calcSize xs
+calcSize (_:xs) = 1 + calcSize xs
 
 generate :: Expr -> [Func]
 generate (List []) = []
@@ -96,9 +110,9 @@ generate' (List (Name "-" : r)) = concatMap generate' r ++ [SUB]
 
 generate' (List (Name "=" : r)) = concatMap generate' r ++ [CEQ]
 generate' (List (Name ">=" : r)) = concatMap generate' r ++ [CGTE]
-generate' (List (Name "<=" : r)) = concatMap generate' r ++ [CLTE]
-generate' (List (Name ">" : r)) = concatMap generate' r ++ [CLT]
-generate' (List (Name "<" : r)) = concatMap generate' r ++ [CGT]
+generate' (List (Name "<=" : [a, b])) = generate' b ++ generate' a ++ [CGTE]
+generate' (List (Name ">" : r)) = concatMap generate' r ++ [CGT]
+generate' (List (Name "<" : [a, b])) = generate' b ++ generate' a ++ [CGT]
 
 generate' (List [Name "atom", x]) = generate' x ++ [ATOM]
 generate' (List (Name "cons" : x : xs)) = generate' x
@@ -106,6 +120,14 @@ generate' (List (Name "cons" : x : xs)) = generate' x
                                         ++ [CONS]
 generate' (List [Name "car", x]) = generate' x ++ [CAR]
 generate' (List [Name "cdr", x]) = generate' x ++ [CDR]
+
+generate' (List [Name "if", x, t, e]) =
+  generate' x ++
+  [If (fromIntegral $ calcSize tb) (fromIntegral $ calcSize eb)] ++
+  tb ++ (Jmp (calcSize eb) : eb)
+  where
+    tb = generate' t
+    eb = generate' e
 
 generate' (List (Name f : args)) = concatMap generate' args
                                    ++ [Call f (fromIntegral $ length args)]

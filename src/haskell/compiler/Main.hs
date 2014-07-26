@@ -11,4 +11,5 @@ main = do
   let addr = map (\f -> address f e) e
   let (e', i) = allFunctionsToAddresses e
   let e'' = map replaceArgs $ allCallsToAddresses e' i addr
-  putStrLn $ concatMap show e''
+  let ops = processIfs $ concatMap afbops e''
+  mapM_ print ops

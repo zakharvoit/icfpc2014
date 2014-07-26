@@ -4,10 +4,11 @@ import Data.Word
 
 data Opcode = LDC Word8
             | ADD | SUB | MUL | DIV
-            | CEQ | CGTE | CLTE | CGT | CLT
+            | CEQ | CGTE | CGT
             | ATOM | CONS | CAR | CDR
-            | SEL Word8 Word8
-            | SSel String String
+            | TSEL Word8 Word8
+            | If Word8 Word8
+            | Jmp Word8
             | Call String Word8
             | AP Word8 | LDF Word8
             | Var String
