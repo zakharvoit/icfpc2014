@@ -27,8 +27,10 @@ data AFuncBin = AFuncBin { afbname :: Word8
                          }
 
 instance Show AFuncBin where
-  show x = ";;; function on address " ++ show (afbname x) ++ ": \n"
-           ++  ((concatMap $ (++ "\n") . show) . afbops) x
+  show x = show (head (afbops x))
+           ++ " ; function on address " ++ show (afbname x) ++ "\n"
+           ++ (((concatMap $ (++ "\n") . show) . afbops)
+           $ x { afbops = tail $ afbops x })
 
 lexemToExpr :: Lexem -> Expr
 lexemToExpr (LName s) = Name s
@@ -42,8 +44,9 @@ allFunctionsToAddresses x = let addr = map fname x in
                               , addr)
 
 address :: Func -> [Func] -> Word8
-address (Func name _ _) f = fromIntegral $ sum $ map (length . fops) $
-                           take (fromJust $ name `elemIndex` (map fname f)) f
+address (Func name _ _) f = (fromIntegral $ sum $ map (length . fops) $
+                           take (fromJust $ name `elemIndex` (map fname f)) f)
+                            - 1
 
 
 
@@ -54,23 +57,23 @@ allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
                           f
 
 correctFunc :: Func -> Func
-correctFunc f = f { fops = genSt (length $ fargs f) ++ fops f ++ [Rtn] }
+correctFunc f = f { fops = genSt (length $ fargs f) ++ fops f ++ [RTN] }
   where
     genSt :: Int -> [Opcode]
     genSt 0 = []
-    genSt n = St 0 (fromIntegral $ n - 1) : genSt (n - 1)
+    genSt n = ST 0 (fromIntegral $ n - 1) : genSt (n - 1)
 
 callToAddress :: Opcode -> [String] -> [Word8] -> [Opcode]
 callToAddress (Call x y) a addr
-  = [ Ldf $ (addr !!) $ fromJust $ x `elemIndex` a
-    , Ap y]
+  = [ LDF $ (addr !!) $ fromJust $ x `elemIndex` a
+    , AP y]
 callToAddress x _ _ = [x]
 
 replaceArgs :: AFunc -> AFuncBin
 replaceArgs (AFunc f args ops) = AFuncBin f $ map (\op -> repla op args) ops
 
 repla :: Opcode -> [String] -> Opcode
-repla (Var x) args = Ld 0 $ fromIntegral $ fromJust $ x `elemIndex` args
+repla (Var x) args = LD 0 $ fromIntegral $ fromJust $ x `elemIndex` args
 repla x _ = x
 
 generate :: Expr -> [Func]
@@ -81,7 +84,7 @@ generate (List ((List (Name "defun" : Name f : List args : body : [])) : r)) =
 generate' :: Expr -> [Opcode]
 
 generate' (Name x) = [Var x]
-generate' (Number x) = [Ldc x]
+generate' (Number x) = [LDC x]
 generate' (List [Name "*"]) = error "* to few args"
 generate' (List [Name "/"]) = error "/ to few args"
 generate' (List [Name "+"]) = error "+ to few args"
@@ -92,23 +95,23 @@ generate' (List [Name "/", _]) = error "/ to few args"
 generate' (List [Name "+", _]) = error "+ to few args"
 generate' (List [Name "-", _]) = error "- to few args"
 
-generate' (List (Name "*" : r)) = concatMap generate' r ++ [Mul]
-generate' (List (Name "/" : r)) = (concat $ reverse $ map generate' r) ++ [Div]
-generate' (List (Name "+" : r)) = concatMap generate' r ++ [Add]
-generate' (List (Name "-" : r)) = concatMap generate' r ++ [Sub]
+generate' (List (Name "*" : r)) = concatMap generate' r ++ [MUL]
+generate' (List (Name "/" : r)) = (concat $ reverse $ map generate' r) ++ [DIV]
+generate' (List (Name "+" : r)) = concatMap generate' r ++ [ADD]
+generate' (List (Name "-" : r)) = concatMap generate' r ++ [SUB]
 
-generate' (List (Name "=" : r)) = concatMap generate' r ++ [CEq]
-generate' (List (Name ">=" : r)) = concatMap generate' r ++ [CGte]
-generate' (List (Name "<=" : r)) = concatMap generate' r ++ [CLte]
-generate' (List (Name ">" : r)) = concatMap generate' r ++ [CLt]
-generate' (List (Name "<" : r)) = concatMap generate' r ++ [CGt]
+generate' (List (Name "=" : r)) = concatMap generate' r ++ [CEQ]
+generate' (List (Name ">=" : r)) = concatMap generate' r ++ [CGTE]
+generate' (List (Name "<=" : r)) = concatMap generate' r ++ [CLTE]
+generate' (List (Name ">" : r)) = concatMap generate' r ++ [CLT]
+generate' (List (Name "<" : r)) = concatMap generate' r ++ [CGT]
 
-generate' (List [Name "atom", x]) = generate' x ++ [Atom]
+generate' (List [Name "atom", x]) = generate' x ++ [ATOM]
 generate' (List (Name "cons" : x : xs)) = generate' x
                                         ++ concatMap generate' xs
-                                        ++ [Cons]
-generate' (List [Name "car", x]) = generate' x ++ [Car]
-generate' (List [Name "cdr", x]) = generate' x ++ [Cdr]
+                                        ++ [CONS]
+generate' (List [Name "car", x]) = generate' x ++ [CAR]
+generate' (List [Name "cdr", x]) = generate' x ++ [CDR]
 
 generate' (List (Name f : args)) = concatMap generate' args
                                    ++ [Call f (fromIntegral $ length args)]
