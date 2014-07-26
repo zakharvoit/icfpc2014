@@ -21,8 +21,11 @@ listParser = do
 
 numParser :: Lexer Char Lexem
 numParser = do
-  i <- many1 (anyOf "-0123456789")
-  return $ LNumber $ read i
+  minus <- try $ lexem $ char '-'
+  i <- many1 (anyOf "0123456789")
+  case reads i of
+    [(a, "")] -> return $ LNumber $ if minus == Nothing then a else -a
+    _       -> error $ "Bad number" ++ i
 
 
 nameParser:: Lexer Char Lexem

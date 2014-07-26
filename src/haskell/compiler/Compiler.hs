@@ -52,17 +52,23 @@ correctFunc f = f { fops = fops f ++ [RTN] }
 
 callToAddress :: Opcode -> [String] -> [Int] -> [Opcode]
 callToAddress (Call x y) a addr
-  = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a)
+  = [ LDF $ (addr !!) $ case x `elemIndex` a of
+         Nothing -> error $ "Call of unknown function " ++ x
+         Just b  -> b
     , AP y]
 callToAddress (Function x) a addr
-  = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a) ]
+  = [ LDF $ (addr !!) $ case x `elemIndex` a of
+         Nothing -> error $ "Can't get pointer to unknown function " ++ x
+         Just b -> b ]
 callToAddress x _ _ = [x]
 
 replaceArgs :: AFunc -> AFuncBin
 replaceArgs (AFunc f args ops) = AFuncBin f $ map (\op -> repla op args) ops
 
 repla :: Opcode -> [String] -> Opcode
-repla (Var x) args = LD 0 $ fromIntegral $ fromJust $ x `elemIndex` args
+repla (Var x) args = LD 0 $ fromIntegral $ case x `elemIndex` args of
+  Nothing -> error $ "Unknown variable " ++ x
+  Just b  -> b
 repla x _ = x
 
 processIfs :: [Opcode] -> [Opcode]
