@@ -54,6 +54,8 @@ callToAddress :: Opcode -> [String] -> [Int] -> [Opcode]
 callToAddress (Call x y) a addr
   = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a)
     , AP y]
+callToAddress (Function x) a addr
+  = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a) ]
 callToAddress x _ _ = [x]
 
 replaceArgs :: AFunc -> AFuncBin
@@ -119,6 +121,8 @@ generate' (List (Name "cons" : x : xs)) = generate' x
                                         ++ [CONS]
 generate' (List [Name "car", x]) = generate' x ++ [CAR]
 generate' (List [Name "cdr", x]) = generate' x ++ [CDR]
+
+generate' (List [Name "clos", Name x]) = [Function x]
 
 generate' (List [Name "if", x, t, e]) =
   generate' x ++

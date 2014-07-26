@@ -8,6 +8,7 @@ data Opcode = LDC Int
             | If Int Int
             | Jmp Int
             | Call String Int
+            | Function String
             | AP Int | LDF Int
             | Var String
             | LD Int Int
