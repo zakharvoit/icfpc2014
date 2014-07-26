@@ -1,0 +1,5 @@
+ Чтобы скомпилировать пишем:
+
+ ./compiler.sh file1.lisp file2.lisp file3.lisp
+
+ В первом файле первой функцией должно быть main
