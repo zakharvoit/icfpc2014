@@ -4,12 +4,11 @@ module Compiler where
 import Opcode
 import MonadicParser
 
-import Data.Word
 import Data.Maybe
 import Data.List
 import Debug.Trace
 
-data Expr = Name { unname :: String } | List [Expr] | Number Word8
+data Expr = Name { unname :: String } | List [Expr] | Number Int
           deriving Show
 
 data Func = Func { fname :: String
@@ -17,12 +16,12 @@ data Func = Func { fname :: String
                  , fops :: [Opcode]
                  } deriving Show
 
-data AFunc = AFunc { afname :: Word8
+data AFunc = AFunc { afname :: Int
                    , afargs :: [String]
                    , afops :: [Opcode]
                    } deriving Show
 
-data AFuncBin = AFuncBin { afbname :: Word8
+data AFuncBin = AFuncBin { afbname :: Int
                          , afbops :: [Opcode]
                          }
 
@@ -37,12 +36,12 @@ allFunctionsToAddresses x = let addr = map fname x in
                                  -> AFunc (address cur x) a o) x
                               , addr)
 
-address :: Func -> [Func] -> Word8
+address :: Func -> [Func] -> Int
 address (Func name _ _) f = (fromIntegral $ sum $ map (length . fops) $
                            take (fromJust $ name `elemIndex` (map fname f)) f)
                             + 1
 
-allCallsToAddresses :: [AFunc] -> [String] -> [Word8] -> [AFunc]
+allCallsToAddresses :: [AFunc] -> [String] -> [Int] -> [AFunc]
 allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
                                 AFunc i a'
                                 (concatMap (\q -> callToAddress q a addr) o))
@@ -51,7 +50,7 @@ allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
 correctFunc :: Func -> Func
 correctFunc f = f { fops = fops f ++ [RTN] }
 
-callToAddress :: Opcode -> [String] -> [Word8] -> [Opcode]
+callToAddress :: Opcode -> [String] -> [Int] -> [Opcode]
 callToAddress (Call x y) a addr
   = [ LDF $ (addr !!) $ fromJust $ (x `elemIndex` a)
     , AP y]
@@ -77,7 +76,7 @@ processIfs' (Jmp a : xs) idx =
   LDC 1 : TSEL (fromIntegral idx + a + 1) 255 : processIfs' xs (idx + 2)
 processIfs' (x:xs) idx = x : processIfs' xs (idx + 1)
 
-calcSize :: [Opcode] -> Word8
+calcSize :: [Opcode] -> Int
 calcSize [] = 0
 calcSize (Call _ _ : xs) = 2 + calcSize xs
 calcSize (If _ _ : xs) = 1 + calcSize xs
