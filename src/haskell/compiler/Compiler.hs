@@ -46,9 +46,7 @@ allFunctionsToAddresses x = let addr = map fname x in
 address :: Func -> [Func] -> Word8
 address (Func name _ _) f = (fromIntegral $ sum $ map (length . fops) $
                            take (fromJust $ name `elemIndex` (map fname f)) f)
-                            - 1
-
-
+                            + 1
 
 allCallsToAddresses :: [AFunc] -> [String] -> [Word8] -> [AFunc]
 allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
@@ -57,11 +55,7 @@ allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
                           f
 
 correctFunc :: Func -> Func
-correctFunc f = f { fops = genSt (length $ fargs f) ++ fops f ++ [RTN] }
-  where
-    genSt :: Int -> [Opcode]
-    genSt 0 = []
-    genSt n = ST 0 (fromIntegral $ n - 1) : genSt (n - 1)
+correctFunc f = f { fops = fops f ++ [RTN] }
 
 callToAddress :: Opcode -> [String] -> [Word8] -> [Opcode]
 callToAddress (Call x y) a addr
