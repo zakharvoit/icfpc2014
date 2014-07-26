@@ -3,20 +3,29 @@
   )
 
 (defun step (state world)
-  (cons 0 (choose-direction
-           world
-           (!! (!! (!! world 1) 1) 0) ; x
-           (!! (!! (!! world 1) 1) 1) ; y
-           )
-        )
+  (twice (choose-direction
+          world
+          (!! (!! (!! world 1) 1) 0) ; x
+          (!! (!! (!! world 1) 1) 1) ; y
+          state
+          )
+         )
   )
+
+(defun twice (x) (cons x x))
 
 (defun dx () (cons 0 (cons 1 (cons 0 (cons -1 0)))))
 (defun dy () (cons -1 (cons 0 (cons 1 (cons 0 0)))))
 
 ;; Choose first direction which we can go
-(defun choose-direction (world x y)
-  (choose-direction- 0 (!! world 0) (!! world 2) x y)
+(defun choose-direction (world x y state)
+  ;; check if last direction is ok
+  (if (&& (ok-pos-p (!! world 0) (+ x (!! (dx) state)) (+ y (!! (dy) state)))
+          (no-ghost-p (!! world 2) (cons (+ x (!! (dx) state))
+                                         (+ y (!! (dy) state)))))
+      state
+    (choose-direction- 0 (!! world 0) (!! world 2) x y)
+    )
   )
 
 ;; Loop in choose-direction
