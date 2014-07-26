@@ -4,7 +4,7 @@ import Data.Word
 
 data Opcode = Ldc Word8
             | Add | Sub | Mul | Div
-            | Eq | Ge | Le | Gt | Lt
+            | CEq | CGte | CLte | CGt | CLt
             | Atom | Cons | Car | Cdr
             | Sel Word8 Word8
             | SSel String String
@@ -13,6 +13,6 @@ data Opcode = Ldc Word8
             | Var String
             | Ld Word8 Word8
             | St Word8 Word8
-            | Ret
+            | Rtn
             | Nop
               deriving Show

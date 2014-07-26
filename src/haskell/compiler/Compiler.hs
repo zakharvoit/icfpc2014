@@ -54,7 +54,7 @@ allCallsToAddresses f a addr = map (\(AFunc i a' o) ->
                           f
 
 correctFunc :: Func -> Func
-correctFunc f = f { fops = genSt (length $ fargs f) ++ fops f ++ [Ret] }
+correctFunc f = f { fops = genSt (length $ fargs f) ++ fops f ++ [Rtn] }
   where
     genSt :: Int -> [Opcode]
     genSt 0 = []
@@ -97,11 +97,11 @@ generate' (List (Name "/" : r)) = (concat $ reverse $ map generate' r) ++ [Div]
 generate' (List (Name "+" : r)) = concatMap generate' r ++ [Add]
 generate' (List (Name "-" : r)) = concatMap generate' r ++ [Sub]
 
-generate' (List (Name "=" : r)) = concatMap generate' r ++ [Eq]
-generate' (List (Name ">=" : r)) = concatMap generate' r ++ [Ge]
-generate' (List (Name "<=" : r)) = concatMap generate' r ++ [Le]
-generate' (List (Name ">" : r)) = concatMap generate' r ++ [Lt]
-generate' (List (Name "<" : r)) = concatMap generate' r ++ [Gt]
+generate' (List (Name "=" : r)) = concatMap generate' r ++ [CEq]
+generate' (List (Name ">=" : r)) = concatMap generate' r ++ [CGte]
+generate' (List (Name "<=" : r)) = concatMap generate' r ++ [CLte]
+generate' (List (Name ">" : r)) = concatMap generate' r ++ [CLt]
+generate' (List (Name "<" : r)) = concatMap generate' r ++ [CGt]
 
 generate' (List [Name "atom", x]) = generate' x ++ [Atom]
 generate' (List (Name "cons" : x : xs)) = generate' x
