@@ -1,0 +1,2 @@
+Compilation:
+        ./compiler.pl ghost.ghc
