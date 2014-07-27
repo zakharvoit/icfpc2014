@@ -9,7 +9,8 @@ my $cnt = 0;
 
 while (<>) {
     s/;.*//g;
-    chomp;
+    s/^\s*//;
+    s/\s*$//;
     next if $_ eq "";
     if (/([a-zA-Z]+):/) {
         $labels{$1} = $cnt;
