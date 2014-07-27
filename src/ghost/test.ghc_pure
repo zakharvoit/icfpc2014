@@ -1,9 +1,0 @@
-int 3          
-int 5          
-and a,1        
-mov b,a        
-mov a,2        
-jeq 7,b,1      
-mov a,0        
-int 0          
-hlt            
