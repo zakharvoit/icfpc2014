@@ -138,6 +138,14 @@ generate' (List [Name "if", x, t, e]) =
     tb = generate' t
     eb = generate' e
 
+generate' (List [Name "&&", a, b]) =
+  generate' $ List [Name "if", a, List [Name "if", b, Number 1, Number 0]
+                   , Number 0]
+
+generate' (List [Name "||", a, b]) =
+  generate' $ List [Name "if", a, Number 1,
+                    List [Name "if", b, Number 1, Number 0]]
+
 generate' (List (Name f : args)) = concatMap generate' args
                                    ++ [Call f (fromIntegral $ length args)]
 
