@@ -14,6 +14,7 @@ data Opcode = LDC Int
             | LD Int Int
             | ST Int Int
             | RTN
+            | DBG
             | NOP
 
 instance Show Opcode where
@@ -35,3 +36,4 @@ instance Show Opcode where
   show (LDF a) = "LDF " ++ show a
   show (ST a b) = "ST " ++ show a ++ " " ++ show b
   show RTN = "RTN"
+  show DBG = "DBUG"

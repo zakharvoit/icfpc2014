@@ -130,6 +130,8 @@ generate' (List [Name "cdr", x]) = generate' x ++ [CDR]
 
 generate' (List [Name "clos", Name x]) = [Function x]
 
+generate' (List [Name "trace", a, b]) = generate' a ++ [DBG] ++ generate' b
+
 generate' (List [Name "if", x, t, e]) =
   generate' x ++
   [If (fromIntegral $ calcSize tb) (fromIntegral $ calcSize eb)] ++
