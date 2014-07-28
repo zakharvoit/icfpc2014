@@ -20,3 +20,7 @@
 (defun ! (a)
   (= a 0)
   )
+
+(defun twice (x) (cons x x))
+
+(defun trace-this (x) (trace x x))
