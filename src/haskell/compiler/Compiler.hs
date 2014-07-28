@@ -149,4 +149,4 @@ generate' (List [Name "||", a, b]) =
 generate' (List (Name f : args)) = concatMap generate' args
                                    ++ [Call f (fromIntegral $ length args)]
 
-generate' x = traceShow x undefined
+generate' x = error $ "Error " ++ show x

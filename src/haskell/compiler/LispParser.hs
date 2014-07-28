@@ -43,9 +43,9 @@ strParser = do
 
 runParse :: Lexer Char [Lexem] -> [Char] -> [Lexem]
 runParse p s = case runLex p s of
-  Left  (_, e) -> error "Parse error"
+  Left  (_, e) -> error $ "Parse error " ++ e
   Right ("", a) -> a
-  Right (as, a) -> error "Parse error"
+  Right (as, a) -> error $ "Parse error " ++ as
 
 parser :: Lexer Char [Lexem]
 parser = many $ lexem $ exprParser
